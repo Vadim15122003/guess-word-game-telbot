@@ -1,6 +1,6 @@
 from telebot import TeleBot, apihelper
 from dotenv import dotenv_values
-from utils.decorators import group
+from utils.decorators import group, exist
 from utils.chat import Chat
 from telebot import types
 from utils.language import get_translation
@@ -25,9 +25,8 @@ def help(message):
 
 @bot.message_handler(commands=['settings'])
 @group(bot)
+@exist(chats)
 def settings(message):
-	if message.chat.id not in chats:
-		chats[message.chat.id] = Chat()
 	if not chats[message.chat.id].in_game():
 		markup = types.InlineKeyboardMarkup()
 		markup.add(types.InlineKeyboardButton(get_translation('ch_lang', chats[message.chat.id]), callback_data='change_lang'))
@@ -35,6 +34,8 @@ def settings(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_message(call):
+	if call.message.chat.id not in chats:
+				chats[call.message.chat.id] = Chat()
 	if call.data == 'change_lang' and not chats[call.message.chat.id].in_game():
 		try:
 			with open('database/languages.json', 'r') as file:
@@ -43,8 +44,9 @@ def callback_message(call):
 			languages = []
 		
 		markup = types.InlineKeyboardMarkup()
-		for language in languages:
-			markup.add(types.InlineKeyboardButton(language, callback_data=f'language_{language}'))
+		buttons = [types.InlineKeyboardButton(language, callback_data=f'language_{language}') for language in languages]
+		for i in range(0, len(buttons), 3):
+			markup.add(*buttons[i:i+3])		
 		markup.add(types.InlineKeyboardButton(get_translation('cancel', chats[call.message.chat.id]), callback_data='language_cancel'))
 		bot.send_message(call.message.chat.id, get_translation('select_lang', chats[call.message.chat.id]), reply_markup=markup)
 		# to remove button after clickin on it
