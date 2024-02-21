@@ -21,7 +21,7 @@ def help(message):
 			chats[message.chat.id] = Chat()
 		bot.send_message(message.chat.id, get_translation('help', chats[message.chat.id]))
 	else:
-		pass
+		bot.send_message(message.chat.id, 'This command will show information about commands and bot usage')
 
 @bot.message_handler(commands=['settings'])
 @group(bot)
