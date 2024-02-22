@@ -1,7 +1,19 @@
 {
     "-1002084339154": {
-        "language": "ro",
-        "game": null,
-        "participants": []
+        "language": "en",
+        "game": {
+            "participants": {
+                "6877896552": "Vadim"
+            },
+            "running": false,
+            "starter_id": 6877896552,
+            "starter_name": "Vadim"
+        },
+        "participants": {
+            "6877896552": {
+                "points": 0,
+                "first_name": "Vadim"
+            }
+        }
     }
 }

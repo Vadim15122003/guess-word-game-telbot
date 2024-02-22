@@ -11,7 +11,7 @@ def load_data() -> Dict[int, Chat]:
 	try:
 		with open('database/chats.json', 'r') as file:
 			chats_dict = json.load(file)
-	except FileNotFoundError:
+	except FileNotFoundError and json.JSONDecodeError:
 		chats_dict = {}
 	chats = {int(k): Chat.from_dict(v) for k, v in chats_dict.items()}
 	return chats
