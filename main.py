@@ -4,6 +4,7 @@ from utils.decorators import group, exist
 from utils.chat import Chat
 from telebot import types
 from utils.language import get_translation
+from utils.database import load_data, save_data
 import json
 
 config = dotenv_values('.env')
@@ -16,9 +17,12 @@ def is_group(message):
 
 @bot.message_handler(commands=['help'])
 def help(message):
+	if not chats:
+		chats.update(load_data())
 	if is_group(message):
 		if message.chat.id not in chats:
 			chats[message.chat.id] = Chat()
+			save_data(chats)
 		bot.send_message(message.chat.id, get_translation('help', chats[message.chat.id]))
 	else:
 		bot.send_message(message.chat.id, 'This command will show information about commands and bot usage')
@@ -35,7 +39,7 @@ def settings(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback_message(call):
 	if call.message.chat.id not in chats:
-				chats[call.message.chat.id] = Chat()
+		chats[call.message.chat.id] = Chat()
 	if call.data == 'change_lang' and not chats[call.message.chat.id].in_game():
 		try:
 			with open('database/languages.json', 'r') as file:
@@ -57,6 +61,7 @@ def callback_message(call):
 			bot.send_message(call.message.chat.id, get_translation('op_cancel', chats[call.message.chat.id]))
 		else:
 			chats[call.message.chat.id].set_language(lang)
+			save_data(chats)
 			bot.send_message(call.message.chat.id, get_translation('op_lang_success', chats[call.message.chat.id]))
 		bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
 

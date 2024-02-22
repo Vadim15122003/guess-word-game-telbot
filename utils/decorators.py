@@ -1,4 +1,5 @@
 from .chat import Chat
+from .database import load_data, save_data
 
 def group(bot):
 	def decorator(func):
@@ -14,8 +15,11 @@ def group(bot):
 def exist(chats):
 	def decorator(func):
 		def wrapper(message):
+			if not chats:
+				chats.update(load_data())
 			if message.chat.id not in chats:
 				chats[message.chat.id] = Chat()
+				save_data(chats)
 			func(message)
 		return wrapper
 	return decorator
