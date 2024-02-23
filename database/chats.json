@@ -7,18 +7,16 @@
                 "7196227855": "PeterPan",
                 "5280577340": "Alex"
             },
-            "running": true,
+            "running": false,
             "starter_id": 6877896552,
             "starter_name": "Vadim",
-            "word": "Marf\u0103",
+            "word": "Papuci",
             "numbers": {
                 "1": 6877896552,
                 "2": 7196227855,
                 "3": 5280577340
             },
-            "person_to_guess": {
-                "1": 6877896552
-            },
+            "person_to_guess": {},
             "msg_not_on_theme": 0,
             "asking": true
         },

@@ -163,5 +163,30 @@ def get_translation(key: str, chat: Chat):
 			return 'In continuare fiecare pe rand va adresa urmatorului jucator cate o intrebare iar acela va trebui sa raspunda\nJucatorul numarul 1 va adresa intrebarea jucatorului numarului 2, iar numarul 2 va raspunde dupa care numarul 2 va adresa intrebare numarului 3 si tot asa\nIn acest fel jucatorii care stiu cuvantul va trebui sasi dea seama cine nul stie, iar cei ce nu stiu cuvantul trebuie sasi dea seama care este acel cuvant'
 		else:
 			return 'Next, each in turn will ask the next player a question and that will have to answer\nPlayer number 1 will ask player number 2 a question, and number 2 will answer after which number 2 will ask a question to number 3 and so on\nIn this way the players who know the word will have to figure out who does not know it, and those who do not know the word must figure out what that word is'
+	
+	elif key == 'you_guess':
+		if chat.language == 'ro':
+			return 'Jocul a inceput, tu nu stii cuvantul si va trebui sal ghicesti care e\nPentru a incerca sal ghicesti tapeaza /report_word'
+		else:
+			return 'The game has started, you do not know the word and will have to guess what it is\nTo try to guess it type /report_word'
+		
+	elif key == "your_word":
+		if chat.language == 'ro':
+			return 'Jocul a inceput tu va trebui sa ghicesti persoana care nu stie cuvantul pentru a face aceasta tapeaza /report_person\nCuvantul este - '
+		else:
+			return 'The game has started you will have to guess the person who does not know the word to do this type /report_person\nThe word is - '
+
+	elif key == 'ask':
+		if chat.language == 'ro':
+			return ' scrie o intrebare iar '
+		else:
+			return ' write a question and '
+		
+	elif key == 'respond':
+		if chat.language == 'ro':
+			return ' va trebui sa raspunda '
+		else:
+			return ' will have to answer '
+
 	else:
 		return 'undefined'

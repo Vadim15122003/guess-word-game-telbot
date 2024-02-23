@@ -17,7 +17,7 @@ def is_group(message):
 
 def private(first_name, user_id, chat_id, mesg_str):
 	try:
-		bot.send_message(user_id, mesg_str)
+		bot.send_message(user_id, mesg_str, parse_mode='HTML')
 		return True
 	except apihelper.ApiTelegramException as e:
 		if e.error_code == 403 and chat_id in chats:
@@ -97,7 +97,19 @@ def play(message):
 					if len(chats[message.chat.id].game.person_to_guess) > 1 else get_translation('rules2', chats[message.chat.id]))
 					+ get_translation('rules4', chats[message.chat.id]))
 				bot.send_message(message.chat.id, get_translation('rules5', chats[message.chat.id]))
-				# send messages in private and start to play the game
+				for nr, pers_id in chats[message.chat.id].game.numbers.items():
+					if nr in chats[message.chat.id].game.person_to_guess:
+						private(chats[message.chat.id].participants[str(pers_id)].first_name, pers_id, message.chat.id, 
+							get_translation('you_guess', chats[message.chat.id]))
+					else:
+						private(chats[message.chat.id].participants[str(pers_id)].first_name, pers_id, message.chat.id, 
+							get_translation('your_word', chats[message.chat.id]) + '<b>' + chats[message.chat.id].game.word + '</b>')
+				asker_nr, asker_id = list(chats[message.chat.id].game.numbers.items())[0]
+				answer_nr, answer_id = list(chats[message.chat.id].game.numbers.items())[1]
+				asker_name = chats[message.chat.id].game.participants[str(asker_id)]
+				answer_name = chats[message.chat.id].game.participants[str(answer_id)]
+				bot.send_message(message.chat.id, '(' + str(asker_nr) + ') ' + asker_name + get_translation('ask', chats[message.chat.id])
+									+ '(' + str(answer_nr) + ') ' + answer_name + get_translation('respond', chats[message.chat.id]))
 		except FileNotFoundError:
 			bot.send_message(message.chat.id, get_translation('no_words', chats[message.chat.id]))
 
