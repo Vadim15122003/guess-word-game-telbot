@@ -5,7 +5,7 @@ from utils.chat import Chat
 from telebot import types
 from utils.language import get_translation
 from utils.database import load_data, save_data
-import json
+import json, random
 
 config = dotenv_values('.env')
 bot = TeleBot(config['TELEGRAM_BOT_TOKEN'])
@@ -56,12 +56,50 @@ def start_game(message):
 		if private(message.from_user.first_name, message.from_user.id, message.chat.id, get_translation('you_start', chat)):
 			chat.start_game(message.from_user.id, message.from_user.first_name)
 			save_data(chats)
+			bot.send_message(message.chat.id, str(chat.game.get_participants_number()) + ' ' +
+					  					message.from_user.first_name + ' ' + get_translation('joined', chat))
 	else:
 		bot.reply_to(message, get_translation('already_in_game', chat))
 	markup = types.InlineKeyboardMarkup()
 	markup.add(types.InlineKeyboardButton(get_translation('join', chats[message.chat.id]), callback_data='join'))
 	bot.send_message(message.chat.id, message.from_user.first_name + ' ' + get_translation('play', chat))
 	bot.send_message(message.chat.id, get_translation('start_game', chat), reply_markup=markup)
+
+@bot.message_handler(commands=['play'])
+@group(bot)
+@exist(chats)
+def play(message):
+	if not chats[message.chat.id].in_game():
+		bot.reply_to(message, get_translation('not_in_game', chats[message.chat.id]))
+	elif chats[message.chat.id].game.is_running():
+		bot.reply_to(message, get_translation('game_running', chats[message.chat.id]))
+	elif chats[message.chat.id].game.starter_id != message.from_user.id:
+		bot.reply_to(message, chats[message.chat.id].game.starter_name + 
+			   		get_translation('game_not_started_by_you', chats[message.chat.id]))
+	elif chats[message.chat.id].game.get_participants_number() < 3:
+		bot.reply_to(message, get_translation('not_enough_players', chats[message.chat.id]))
+	else:
+		try:
+			with open('database/words.json', 'r') as file:
+				words = json.load(file)[chats[message.chat.id].language]
+				word = random.choice(words)
+				del words
+				chats[message.chat.id].game.play(word)
+				save_data(chats)
+				bot.send_message(message.chat.id, get_translation('game_started', chats[message.chat.id]))
+				list_players: str = ''
+				for nr, pers_id in chats[message.chat.id].game.numbers.items():
+					list_players += str(nr) + '. ' + chats[message.chat.id].game.participants[str(pers_id)] + '\n'
+				if list_players:
+					bot.send_message(message.chat.id, list_players)
+				bot.send_message(message.chat.id, get_translation('rules1', chats[message.chat.id])
+					+ (str(len(chats[message.chat.id].game.person_to_guess)) + get_translation('rules3', chats[message.chat.id])
+					if len(chats[message.chat.id].game.person_to_guess) > 1 else get_translation('rules2', chats[message.chat.id]))
+					+ get_translation('rules4', chats[message.chat.id]))
+				bot.send_message(message.chat.id, get_translation('rules5', chats[message.chat.id]))
+				# send messages in private and start to play the game
+		except FileNotFoundError:
+			bot.send_message(message.chat.id, get_translation('no_words', chats[message.chat.id]))
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_message(call):
@@ -105,7 +143,8 @@ def callback_message(call):
 				if not private(call.from_user.first_name, call.from_user.id, call.message.chat.id, get_translation('you_join', chat)):
 					chat.remove_participant(call.from_user.id)
 				else:
-					bot.send_message(call.message.chat.id, call.from_user.first_name + ' ' + get_translation('joined', chat))
+					bot.send_message(call.message.chat.id, str(chat.game.get_participants_number()) + ' ' +
+					  					call.from_user.first_name + ' ' + get_translation('joined', chat))
 				save_data(chats)
 			else:
 				# bot.send_message(call.message.chat.id, call.from_user.first_name + ' deja participa')

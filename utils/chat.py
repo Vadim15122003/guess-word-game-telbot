@@ -15,7 +15,8 @@ class Chat:
 		self.language = language
 
 	def add_participant(self, id: int, first_name: str):
-		self.participants[id] = Player(first_name)
+		if not id in self.participants:
+			self.participants[id] = Player(first_name)
 		return self.game.add_participant(id, first_name)
 	
 	def remove_participant(self, id: int):

@@ -97,6 +97,71 @@ def get_translation(key: str, chat: Chat):
 			return 'Participi intrun joc'
 		else:
 			return 'You are participating in a game'
-
+		
+	elif key == 'not_in_game':
+		if chat.language == 'ro':
+			return 'Nu esti intrun joc, pentru a incepe un joc tapeaza mai intai /start_game'
+		else:
+			return 'You are not in a game, to start a game first type /start_game'
+	
+	elif key == 'game_running':
+		if chat.language == 'ro':
+			return 'Jocul este deja in desfasurare'
+		else:
+			return 'The game is already in progress'
+		
+	elif key == 'game_not_started_by_you':
+		if chat.language == 'ro':
+			return ' a creat jocul , doar el poate folosi comanda /play pentru a incepe jocul'
+		else:
+			return ' created the game, only he can use the /play command to start the game'
+		
+	elif key == 'not_enough_players':
+		if chat.language == 'ro':
+			return 'Nu sunt suficienti jucatori pentru a incepe jocul, este nevoie de minim 3 jucatori'
+		else:
+			return 'There are not enough players to start the game, at least 3 players are needed'
+		
+	elif key == 'no_words':
+		if chat.language == 'ro':
+			return 'Nam gasit cuvinte in baza de date (sau nam putut accesa baza de date)'
+		else:
+			return 'No words found in the database (or I could not access the database)'
+		
+	elif key == 'game_started':
+		if chat.language == 'ro':
+			return 'Jocul a inceput, iată lista participanților:'
+		else:
+			return 'The game has started, here is the list of participants:'
+		
+	elif key == 'rules1':
+		if chat.language == 'ro':
+			return 'Reguli:\nToti ati primit in privat un cuvant. '
+		else:
+			return 'Rules:\nAll of you received a word in private. '
+		
+	elif key == 'rules2':
+		if chat.language == 'ro':
+			return 'O persoana nu a primit cuvantul\nacea persoana va trebui sal ghiceasca\nRestu persoanelor vor trebui sa ghiceasca persoana care nu stie cuvantul\n\n'
+		else:
+			return 'A person did not receive the word\nthat person will have to guess it\nThe rest of the people will have to guess the person who does not know the word\n\n'
+		
+	elif key == 'rules3':
+		if chat.language == 'ro':
+			return ' persoane nu au primit cuvantul, acele persoane vor trebui sal ghiceasca\nRestu persoanelor vor trebui sa ghiceasca persoanele care nu stiu cuvantul\n\n'
+		else:
+			return ' people did not receive the word, those people will have to guess it\nThe rest of the people will have to guess the people who do not know the word\n\n'
+		
+	elif key == 'rules4':
+		if chat.language == 'ro':
+			return '- Pentru a ghici cuvantul scrie in privat /report_word apoi vei putea trimite cuvantul\n- Dacal ghicesti vei primi 3 puncte daca nu vei pierde 1 punct si jocul pentru tine se va incheia\n- Daca crezi ca ai ghicit cuvantul dar ai spus un sinonim poti scrie /verify_my_word si ceilanti jucatori vor vota daca ai spus cuvantul corect sau nu\n\n- Pentru a ghici persoana care nu stie cuvantul scrie in privat /report_player si dupa vei putea selecta dintro list persoana pe care o presupui\n- Daca nu ghicesti atat tu cat si acea persoana veti parasi jocul iar cel ce nu a ghicit va pierde 4 puncte\n- Daca vei ghici jocul se va termina si tu vei primi 2 puncte'
+		else:
+			return '- To guess the word write in private /report_word then you will be able to send the word\n- If you guess you will receive 3 points if not you will lose 1 point and the game will end for you\n- If you think you guessed the word but said a synonym you can write /verify_my_word and the other players will vote if you said the word correctly or not\n\n- To guess the person who does not know the word write in private /report_player and then you will be able to select from a list the person you suspect\n- If you do not guess both you and that person will leave the game and the one who did not guess will lose 4 points\n- If you guess the game will end and you will receive 2 points'
+	
+	elif key == 'rules5':
+		if chat.language == 'ro':
+			return 'In continuare fiecare pe rand va adresa urmatorului jucator cate o intrebare iar acela va trebui sa raspunda\nJucatorul numarul 1 va adresa intrebarea jucatorului numarului 2, iar numarul 2 va raspunde dupa care numarul 2 va adresa intrebare numarului 3 si tot asa\nIn acest fel jucatorii care stiu cuvantul va trebui sasi dea seama cine nul stie, iar cei ce nu stiu cuvantul trebuie sasi dea seama care este acel cuvant'
+		else:
+			return 'Next, each in turn will ask the next player a question and that will have to answer\nPlayer number 1 will ask player number 2 a question, and number 2 will answer after which number 2 will ask a question to number 3 and so on\nIn this way the players who know the word will have to figure out who does not know it, and those who do not know the word must figure out what that word is'
 	else:
 		return 'undefined'

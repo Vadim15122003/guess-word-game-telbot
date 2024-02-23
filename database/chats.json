@@ -1,18 +1,39 @@
 {
     "-1002084339154": {
-        "language": "en",
+        "language": "ro",
         "game": {
             "participants": {
-                "6877896552": "Vadim"
+                "6877896552": "Vadim",
+                "7196227855": "PeterPan",
+                "5280577340": "Alex"
             },
-            "running": false,
+            "running": true,
             "starter_id": 6877896552,
-            "starter_name": "Vadim"
+            "starter_name": "Vadim",
+            "word": "Marf\u0103",
+            "numbers": {
+                "1": 6877896552,
+                "2": 7196227855,
+                "3": 5280577340
+            },
+            "person_to_guess": {
+                "1": 6877896552
+            },
+            "msg_not_on_theme": 0,
+            "asking": true
         },
         "participants": {
             "6877896552": {
                 "points": 0,
                 "first_name": "Vadim"
+            },
+            "7196227855": {
+                "points": 0,
+                "first_name": "PeterPan"
+            },
+            "5280577340": {
+                "points": 0,
+                "first_name": "Alex"
             }
         }
     }
