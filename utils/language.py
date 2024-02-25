@@ -187,6 +187,18 @@ def get_translation(key: str, chat: Chat):
 			return ' va trebui sa raspunda '
 		else:
 			return ' will have to answer '
+		
+	elif key == 'responder':
+		if chat.language == 'ro':
+			return ' raspunde la intrebarea adresata de '
+		else:
+			return ' answer the question asked by '
+		
+	elif key == 'reminder':
+		if chat.language == 'ro':
+			return 'Reamintire:\nPentru a ghici cuvantul tastati in privat botului /report_word\nPentru a ghici persoana care nu stie cuvantul tastati in privat botului /report_player'
+		else:
+			return 'Reminder:\nTo guess the word type in private to the bot /report_word\nTo guess the person who does not know the word type in private to the bot /report_player'
 
 	else:
 		return 'undefined'

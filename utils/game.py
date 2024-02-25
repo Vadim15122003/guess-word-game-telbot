@@ -9,6 +9,7 @@ class Game:
 	numbers = {}
 	person_to_guess = {}
 	msg_not_on_theme = 0
+	reminder_cnt = 0
 	asking = True
 
 	def __init__(self):
@@ -58,6 +59,7 @@ class Game:
 			'numbers': self.numbers,
 			'person_to_guess': self.person_to_guess,
 			'msg_not_on_theme': self.msg_not_on_theme,
+			'reminder_cnt': self.reminder_cnt,
 			'asking': self.asking
 		}
 	
@@ -72,5 +74,6 @@ class Game:
 		game.numbers = data['numbers']
 		game.person_to_guess = data['person_to_guess']
 		game.msg_not_on_theme = data['msg_not_on_theme']
+		game.reminder_cnt = data['reminder_cnt'] if 'reminder_cnt' in data else 0
 		game.asking = data['asking']
 		return game

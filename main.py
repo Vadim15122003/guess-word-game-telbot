@@ -113,6 +113,50 @@ def play(message):
 		except FileNotFoundError:
 			bot.send_message(message.chat.id, get_translation('no_words', chats[message.chat.id]))
 
+@bot.message_handler()
+def message_handle(message):
+	if not chats:
+		chats.update(load_data())
+	chat = chats[message.chat.id]
+	if chat.in_game() and chat.game.is_running():
+		game = chat.game
+		pers_nr, pers_id = list(game.numbers.items())[0]
+		next_pers_nr, next_pers_id = list(game.numbers.items())[1]
+		pers_name = game.participants[str(pers_id)]
+		next_pers_name = game.participants[str(next_pers_id)]
+		last_pers_nr, last_pers_id = list(game.numbers.items())[len(game.numbers) - 1]
+		last_pers_name = game.participants[str(last_pers_id)]
+		if pers_id != message.from_user.id:
+			msg_not_on_thme_allowed = 2
+			if game.msg_not_on_theme > msg_not_on_thme_allowed - 1:
+				game.msg_not_on_theme = 0
+				if game.asking:
+					bot.send_message(message.chat.id, '(' + str(pers_nr) + ') ' + pers_name + get_translation('ask', chat)
+									+ '(' + str(next_pers_nr) + ') ' + next_pers_name + get_translation('respond', chat))
+				else:
+					bot.send_message(message.chat.id, '(' + str(pers_nr) + ') ' + pers_name
+					  				+ get_translation('responder', chat) + '(' + str(last_pers_nr) + ') ' + last_pers_name)
+			else:
+				game.msg_not_on_theme += 1
+		else:
+			if game.asking:
+				bot.send_message(message.chat.id, '(' + str(next_pers_nr) + ') ' + next_pers_name
+					  				+ get_translation('responder', chat) + '(' + str(pers_nr) + ') ' + pers_name)
+				del game.numbers[pers_nr]
+				game.numbers[pers_nr] = pers_id
+				game.asking = False
+			else:
+				bot.send_message(message.chat.id, '(' + str(pers_nr) + ') ' + pers_name + get_translation('ask', chat)
+									+ '(' + str(next_pers_nr) + ') ' + next_pers_name + get_translation('respond', chats[message.chat.id]))
+				game.asking = True
+				game.reminder_cnt += 1
+				reminder_cnt_allowed = 5
+				if game.reminder_cnt >= reminder_cnt_allowed:
+					bot.send_message(message.chat.id, get_translation('reminder', chat))
+					game.reminder_cnt = 0
+			game.msg_not_on_theme = 0
+		save_data(chats)
+
 @bot.callback_query_handler(func=lambda call: True)
 def callback_message(call):
 	if not chats:
