@@ -200,5 +200,17 @@ def get_translation(key: str, chat: Chat):
 		else:
 			return 'Reminder:\nTo guess the word type in private to the bot /report_word\nTo guess the person who does not know the word type in private to the bot /report_player'
 
+	elif key == 'private':
+		if chat.language == 'ro':
+			return 'Aceasta comanda poate fi folosita doar in conversatie privata cu botul'
+		else:
+			return 'This command can only be used in private conversation with the bot'
+		
+	elif key == 'is_in_game':
+		if chat.language == 'ro':
+			return ' esti deja inrtun joc in alt chat, nu poti participa simultan la mai multe jocuri'
+		else:
+			return ' you are already in a game in another chat, you can not participate in multiple games simultaneously'
+
 	else:
 		return 'undefined'

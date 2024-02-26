@@ -1,11 +1,17 @@
 from telebot import TeleBot, apihelper
 from dotenv import dotenv_values
-from utils.decorators import group, exist
+from utils.decorators import group, exist, is_in_game
 from utils.chat import Chat
 from telebot import types
 from utils.language import get_translation
 from utils.database import load_data, save_data
 import json, random
+
+# report_player
+# report_word
+# verify_my_word
+# points
+# reset_points (only by admins)
 
 config = dotenv_values('.env')
 bot = TeleBot(config['TELEGRAM_BOT_TOKEN'])
@@ -24,10 +30,10 @@ def private(first_name, user_id, chat_id, mesg_str):
 			bot.send_message(chat_id, f'{first_name} {get_translation("private_msg", chats[chat_id])}')
 		return False
 
+# public chats
 @bot.message_handler(commands=['help'])
+@exist(chats)
 def help(message):
-	if not chats:
-		chats.update(load_data())
 	if is_group(message):
 		if message.chat.id not in chats:
 			chats[message.chat.id] = Chat()
@@ -37,8 +43,8 @@ def help(message):
 		bot.send_message(message.chat.id, 'This command will show information about commands and bot usage')
 
 @bot.message_handler(commands=['settings'])
-@group(bot)
 @exist(chats)
+@group(bot)
 def settings(message):
 	if not chats[message.chat.id].in_game():
 		markup = types.InlineKeyboardMarkup()
@@ -48,8 +54,9 @@ def settings(message):
 		bot.reply_to(message, get_translation('in_game', chats[message.chat.id]))
 
 @bot.message_handler(commands=['start_game'])
-@group(bot)
 @exist(chats)
+@group(bot)
+@is_in_game(chats, bot)
 def start_game(message):
 	chat = chats[message.chat.id]
 	if not chat.in_game():
@@ -113,49 +120,56 @@ def play(message):
 		except FileNotFoundError:
 			bot.send_message(message.chat.id, get_translation('no_words', chats[message.chat.id]))
 
+# private chats
+@bot.message_handler(commands=['report_player'])
+def report_player(message):
+	pass
+
 @bot.message_handler()
+@exist(chats)
 def message_handle(message):
-	if not chats:
-		chats.update(load_data())
-	chat = chats[message.chat.id]
-	if chat.in_game() and chat.game.is_running():
-		game = chat.game
-		pers_nr, pers_id = list(game.numbers.items())[0]
-		next_pers_nr, next_pers_id = list(game.numbers.items())[1]
-		pers_name = game.participants[str(pers_id)]
-		next_pers_name = game.participants[str(next_pers_id)]
-		last_pers_nr, last_pers_id = list(game.numbers.items())[len(game.numbers) - 1]
-		last_pers_name = game.participants[str(last_pers_id)]
-		if pers_id != message.from_user.id:
-			msg_not_on_thme_allowed = 2
-			if game.msg_not_on_theme > msg_not_on_thme_allowed - 1:
-				game.msg_not_on_theme = 0
-				if game.asking:
-					bot.send_message(message.chat.id, '(' + str(pers_nr) + ') ' + pers_name + get_translation('ask', chat)
-									+ '(' + str(next_pers_nr) + ') ' + next_pers_name + get_translation('respond', chat))
+	if is_group(message):
+		chat = chats[message.chat.id]
+		if chat.in_game() and chat.game.is_running():
+			game = chat.game
+			pers_nr, pers_id = list(game.numbers.items())[0]
+			next_pers_nr, next_pers_id = list(game.numbers.items())[1]
+			pers_name = game.participants[str(pers_id)]
+			next_pers_name = game.participants[str(next_pers_id)]
+			last_pers_nr, last_pers_id = list(game.numbers.items())[len(game.numbers) - 1]
+			last_pers_name = game.participants[str(last_pers_id)]
+			if pers_id != message.from_user.id:
+				msg_not_on_thme_allowed = 2
+				if game.msg_not_on_theme > msg_not_on_thme_allowed - 1:
+					game.msg_not_on_theme = 0
+					if game.asking:
+						bot.send_message(message.chat.id, '(' + str(pers_nr) + ') ' + pers_name + get_translation('ask', chat)
+										+ '(' + str(next_pers_nr) + ') ' + next_pers_name + get_translation('respond', chat))
+					else:
+						bot.send_message(message.chat.id, '(' + str(pers_nr) + ') ' + pers_name
+										+ get_translation('responder', chat) + '(' + str(last_pers_nr) + ') ' + last_pers_name)
 				else:
-					bot.send_message(message.chat.id, '(' + str(pers_nr) + ') ' + pers_name
-					  				+ get_translation('responder', chat) + '(' + str(last_pers_nr) + ') ' + last_pers_name)
+					game.msg_not_on_theme += 1
 			else:
-				game.msg_not_on_theme += 1
-		else:
-			if game.asking:
-				bot.send_message(message.chat.id, '(' + str(next_pers_nr) + ') ' + next_pers_name
-					  				+ get_translation('responder', chat) + '(' + str(pers_nr) + ') ' + pers_name)
-				del game.numbers[pers_nr]
-				game.numbers[pers_nr] = pers_id
-				game.asking = False
-			else:
-				bot.send_message(message.chat.id, '(' + str(pers_nr) + ') ' + pers_name + get_translation('ask', chat)
-									+ '(' + str(next_pers_nr) + ') ' + next_pers_name + get_translation('respond', chats[message.chat.id]))
-				game.asking = True
-				game.reminder_cnt += 1
-				reminder_cnt_allowed = 5
-				if game.reminder_cnt >= reminder_cnt_allowed:
-					bot.send_message(message.chat.id, get_translation('reminder', chat))
-					game.reminder_cnt = 0
-			game.msg_not_on_theme = 0
-		save_data(chats)
+				if game.asking:
+					bot.send_message(message.chat.id, '(' + str(next_pers_nr) + ') ' + next_pers_name
+										+ get_translation('responder', chat) + '(' + str(pers_nr) + ') ' + pers_name)
+					del game.numbers[pers_nr]
+					game.numbers[pers_nr] = pers_id
+					game.asking = False
+				else:
+					bot.send_message(message.chat.id, '(' + str(pers_nr) + ') ' + pers_name + get_translation('ask', chat)
+										+ '(' + str(next_pers_nr) + ') ' + next_pers_name + get_translation('respond', chats[message.chat.id]))
+					game.asking = True
+					game.reminder_cnt += 1
+					reminder_cnt_allowed = 5
+					if game.reminder_cnt >= reminder_cnt_allowed:
+						bot.send_message(message.chat.id, get_translation('reminder', chat))
+						game.reminder_cnt = 0
+				game.msg_not_on_theme = 0
+			save_data(chats)
+	else:
+		pass
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_message(call):
@@ -193,6 +207,12 @@ def callback_message(call):
 	if call.data == 'join':
 		if not chats:
 			chats.update(load_data())
+		user_id = call.from_user.id
+		chat_id = call.message.chat.id
+		for ch_id, chat in chats.items():
+			if ch_id != chat_id and chat.game and chat.game.exits_user(str(user_id)):
+				bot.send_message(ch_id, call.from_user.first_name + get_translation('is_in_game', chat))
+				return
 		if call.message.chat.id in chats and chats[call.message.chat.id].game and not chats[call.message.chat.id].game.is_running():
 			chat = chats[call.message.chat.id]
 			if chat.add_participant(call.from_user.id, call.from_user.first_name):

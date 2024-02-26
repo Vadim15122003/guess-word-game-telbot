@@ -21,6 +21,9 @@ class Game:
 			self.numbers[len(self.numbers) + 1] = id
 			return True
 		return False
+	
+	def exits_user(self, id):
+		return id in self.participants
 
 	def remove_participant(self, id: int):
 		if id in self.participants:
