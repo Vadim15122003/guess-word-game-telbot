@@ -271,6 +271,12 @@ def get_translation(key: str, chat: Chat):
 			return 'Ambii au parasit jocul'
 		else:
 			return 'Both left the game'
+		
+	elif key == 'no_games':
+		if chat.language == 'ro':
+			return 'Nu ati jucat niciun joc inca in acest chat, deci toti au 0 puncte'
+		else:
+			return 'You have not played any games yet in this chat, so everyone has 0 points'
 
 	else:
 		return 'undefined'

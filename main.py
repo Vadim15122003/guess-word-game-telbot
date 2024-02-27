@@ -56,10 +56,13 @@ def next_action(game, chat, chat_id):
 							+ get_translation('responder', chat) + '(' + str(last_pers_nr) + ') ' + last_pers_name)
 			
 def show_points(chat, chat_id):
-	msg = get_translation('points_info', chat)
-	for player in chat.participants.values():
-		msg += f'{player.first_name}: {player.points}\n'
-	bot.send_message(chat_id, msg)
+	if chat.participants:
+		msg = get_translation('points_info', chat)
+		for player in chat.participants.values():
+			msg += f'{player.first_name}: {player.points}\n'
+		bot.send_message(chat_id, msg)
+	else:
+		bot.send_message(chat_id, get_translation('no_games', chat))
 
 # public chats
 @bot.message_handler(commands=['help'])
@@ -80,6 +83,13 @@ def settings(message):
 		bot.reply_to(message, get_translation('select_edit', chats[message.chat.id]), reply_markup=markup)
 	else:
 		bot.reply_to(message, get_translation('in_game', chats[message.chat.id]))
+
+
+@bot.message_handler(commands=['points'])
+@exist(chats)
+@group(bot)
+def points(message):
+	show_points(chats[message.chat.id], message.chat.id)
 
 @bot.message_handler(commands=['start_game'])
 @exist(chats)
