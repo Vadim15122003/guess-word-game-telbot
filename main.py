@@ -1,6 +1,6 @@
 from telebot import TeleBot, apihelper
 from dotenv import dotenv_values
-from utils.decorators import group, exist, is_in_game
+from utils.decorators import group, exist, is_in_game, private_conv
 from utils.chat import Chat
 from telebot import types
 from utils.language import get_translation
@@ -29,15 +29,43 @@ def private(first_name, user_id, chat_id, mesg_str):
 		if e.error_code == 403 and chat_id in chats:
 			bot.send_message(chat_id, f'{first_name} {get_translation("private_msg", chats[chat_id])}')
 		return False
+	
+def get_user_chat(user_id):
+	for chat_id, chat in chats.items():
+		if chat.game and chat.game.exits_user(str(user_id)):
+			return chat_id, chat
+	return None, None
+
+def next_action(game, chat, chat_id):
+	if len(game.participants) < 3:
+		bot.send_message(chat_id, get_translation('game_ended', chat))
+		show_points(chat, chat_id)
+		chat.game = None
+	else:
+		pers_nr, pers_id = list(game.numbers.items())[0]
+		next_pers_nr, next_pers_id = list(game.numbers.items())[1]
+		pers_name = game.participants[str(pers_id)]
+		next_pers_name = game.participants[str(next_pers_id)]
+		last_pers_nr, last_pers_id = list(game.numbers.items())[len(game.numbers) - 1]
+		last_pers_name = game.participants[str(last_pers_id)]
+		if game.asking:
+			bot.send_message(chat_id, '(' + str(pers_nr) + ') ' + pers_name + get_translation('ask', chat)
+							+ '(' + str(next_pers_nr) + ') ' + next_pers_name + get_translation('respond', chat))
+		else:
+			bot.send_message(chat_id, '(' + str(pers_nr) + ') ' + pers_name
+							+ get_translation('responder', chat) + '(' + str(last_pers_nr) + ') ' + last_pers_name)
+			
+def show_points(chat, chat_id):
+	msg = get_translation('points_info', chat)
+	for player in chat.participants.values():
+		msg += f'{player.first_name}: {player.points}\n'
+	bot.send_message(chat_id, msg)
 
 # public chats
 @bot.message_handler(commands=['help'])
 @exist(chats)
 def help(message):
 	if is_group(message):
-		if message.chat.id not in chats:
-			chats[message.chat.id] = Chat()
-			save_data(chats)
 		bot.send_message(message.chat.id, get_translation('help', chats[message.chat.id]))
 	else:
 		bot.send_message(message.chat.id, 'This command will show information about commands and bot usage')
@@ -73,8 +101,8 @@ def start_game(message):
 	bot.send_message(message.chat.id, get_translation('start_game', chat), reply_markup=markup)
 
 @bot.message_handler(commands=['play'])
-@group(bot)
 @exist(chats)
+@group(bot)
 def play(message):
 	if not chats[message.chat.id].in_game():
 		bot.reply_to(message, get_translation('not_in_game', chats[message.chat.id]))
@@ -122,8 +150,30 @@ def play(message):
 
 # private chats
 @bot.message_handler(commands=['report_player'])
+@exist(chats)
+@private_conv(bot, chats)
 def report_player(message):
-	pass
+	_, chat = get_user_chat(message.from_user.id)
+	if chat and chat.game.is_running():
+		is_to_guess = False
+		for pers_id in chat.game.person_to_guess.values():
+			if pers_id == message.from_user.id:
+				is_to_guess = True
+				break
+		if not is_to_guess:
+			markup = types.InlineKeyboardMarkup()
+			for i in range(1, len(chat.game.numbers) + 1):
+				if chat.game.numbers[str(i)] != message.from_user.id:
+					markup.add(types.InlineKeyboardButton('(' + str(i) + ') ' + chat.game.participants[str(chat.game.numbers[str(i)])],
+											callback_data=f'report_{i}'))
+			markup.add(types.InlineKeyboardButton('Anuleaza', callback_data='cancel_player_report'))
+			bot.send_message(message.chat.id, 'Alegeti pe cine presupuneti ca nu stie cuvantul', reply_markup=markup)
+	elif chat and chat.game.is_running():
+		bot.send_message(message.chat.id, 'Tu esti persoana care nu stie cuvantul si trebuie sa ghicesti cuvantul, pentru aceasta tasteaza /report_word')
+	elif chat:
+		bot.send_message(message.chat.id, 'Inca nu a inceput jocul (cel ce a inceput jocul va trebui sa tasteze /play dupa ce toti participantii vor apasa sa participe)')
+	else:
+		bot.send_message(message.chat.id, 'Nu esti in niciun joc activ momentan')
 
 @bot.message_handler()
 @exist(chats)
@@ -175,7 +225,7 @@ def message_handle(message):
 def callback_message(call):
 	if not chats:
 		chats.update(load_data())
-	if call.message.chat.id not in chats:
+	if call.message.chat.id not in chats and call.message.chat.type != 'private':
 		chats[call.message.chat.id] = Chat()
 
 	if call.data == 'change_lang' and not chats[call.message.chat.id].in_game():
@@ -225,5 +275,52 @@ def callback_message(call):
 			else:
 				# bot.send_message(call.message.chat.id, call.from_user.first_name + ' deja participa')
 				pass
+
+	if call.data.startswith('report_'):
+		chat_id, chat = get_user_chat(call.from_user.id)
+		if chat and chat.game and chat.game.is_running():
+			game = chat.game
+			reported_nr = call.data.split('_')[1]
+			reported_id = game.numbers[str(reported_nr)]
+			reported_name = game.participants[str(reported_id)]
+			reporter_name = call.from_user.first_name
+			reporter_nr = game.get_nr_by_id(call.from_user.id)
+			if reported_nr in game.numbers and str(reported_id) in game.participants:
+				first_nr, _ = list(game.numbers.items())[0]
+				last_nr, _ = list(game.numbers.items())[len(game.numbers) - 1]
+				if last_nr == reported_nr or first_nr == reported_nr:
+					game.asking = True
+				if reported_nr in game.person_to_guess:
+					game.remove_participant(reported_id)
+					bot.send_message(call.message.chat.id, 'Ai ghicit corect, ' + reported_name + ' nu stia cuvantul, pentru aceasta primesti 2 puncte')
+					bot.send_message(chat_id, '(' + str(reporter_nr) + ') ' + reporter_name + ' ' + get_translation("report_player", chat) +
+					  				' (' + str(reported_nr) + ') ' + reported_name + ' ' + get_translation("report_succes", chat) + ' '
+									+ str(len(game.person_to_guess)) + ' ' + get_translation("remained_to_guess", chat))
+					bot.send_message(chat_id, '(' + str(reported_nr) + ') ' + reported_name + ' ' + get_translation("report_eliminated", chat) + 
+					  				' (' + str(reporter_nr) + ') ' + reporter_name + ' ' + get_translation("report_get_points", chat))
+					chat.add_points(call.from_user.id, 2)
+					next_action(game, chat, chat_id)
+				else:
+					if last_nr == reporter_nr or first_nr == reporter_nr:
+						game.asking = True
+					game.remove_participant(reported_id)
+					game.remove_participant(call.from_user.id)
+					chat.add_points(call.from_user.id, -4)
+					bot.send_message(call.message.chat.id, 'Nu ai ghicit, ' + reported_name + ' stia cuvantul, pentru aceasta ti se vor scadea 4 puncte')
+					bot.send_message(chat_id, '(' + str(reporter_nr) + ') ' + reporter_name + ' ' + get_translation("report_player", chat)
+					  				+ ' (' + str(reported_nr) + ') ' + reported_name + ' ' + get_translation("report_fail", chat) + ' 4 '
+									+ get_translation("points", chat))
+					bot.send_message(chat_id, get_translation('two_quit', chat))
+					next_action(game, chat, chat_id)
+				save_data(chats)
+			else:
+				bot.send_message(call.message.chat.id, f'({reported_nr}) {reported_name} nu mai este in acest joc')
+		else:
+			bot.send_message(call.message.chat.id, 'Nu esti in niciun joc activ momentan')
+		bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
+
+	if call.data == 'cancel_player_report':
+		bot.send_message(call.message.chat.id, 'Operatie anulata')
+		bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
 
 bot.polling(non_stop=True)

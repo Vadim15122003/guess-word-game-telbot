@@ -1,41 +1,41 @@
 {
-	"-1002084339154": {
-		"language": "ro",
-		"game": {
-			"participants": {
-				"6877896552": "Vadim",
-				"7196227855": "PeterPan",
-				"5280577340": "Alex"
-			},
-			"running": false,
-			"starter_id": 6877896552,
-			"starter_name": "Vadim",
-			"word": "Papion",
-			"numbers": {
-				"1": 6877896552,
-				"2": 7196227855,
-				"3": 5280577340
-			},
-			"person_to_guess": {
-				"2": 7196227855
-			},
-			"msg_not_on_theme": 0,
-			"reminder_cnt": 0,
-			"asking": true
-		},
-		"participants": {
-			"6877896552": {
-				"points": 0,
-				"first_name": "Vadim"
-			},
-			"7196227855": {
-				"points": 0,
-				"first_name": "PeterPan"
-			},
-			"5280577340": {
-				"points": 0,
-				"first_name": "Alex"
-			}
-		}
-	}
+    "-1002084339154": {
+        "language": "ro",
+        "game": {
+            "participants": {
+                "6877896552": "Vadim",
+                "7196227855": "PeterPan",
+                "5280577340": "Alex"
+            },
+            "running": true,
+            "starter_id": 6877896552,
+            "starter_name": "Vadim",
+            "word": "G\u00e2t",
+            "numbers": {
+                "2": 7196227855,
+                "3": 5280577340,
+                "1": 6877896552
+            },
+            "person_to_guess": {
+                "2": 7196227855
+            },
+            "msg_not_on_theme": 0,
+            "reminder_cnt": 0,
+            "asking": false
+        },
+        "participants": {
+            "6877896552": {
+                "points": 0,
+                "first_name": "Vadim"
+            },
+            "7196227855": {
+                "points": 0,
+                "first_name": "PeterPan"
+            },
+            "5280577340": {
+                "points": 0,
+                "first_name": "Alex"
+            }
+        }
+    }
 }

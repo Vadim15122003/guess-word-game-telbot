@@ -15,22 +15,34 @@ class Game:
 	def __init__(self):
 		self.running = False
 	
-	def add_participant(self, id: int, first_name: str):
-		if not id in self.participants:
-			self.participants[id] = first_name
+	def add_participant(self, id, first_name: str):
+		if not str(id) in self.participants:
+			self.participants[str(id)] = first_name
 			self.numbers[len(self.numbers) + 1] = id
 			return True
 		return False
 	
 	def exits_user(self, id):
-		return id in self.participants
+		return str(id) in self.participants
 
-	def remove_participant(self, id: int):
-		if id in self.participants:
-			del self.participants[id]
+	def remove_participant(self, id):
+		if str(id) in self.participants:
+			del self.participants[str(id)]
+		for nr, person_id in self.numbers.items():
+			if int(person_id) == int(id):
+				del self.numbers[nr]
+				if nr in self.person_to_guess:
+					del self.person_to_guess[nr]
+				break
 
 	def get_participants_number(self):
 		return len(self.participants)
+	
+	def get_nr_by_id(self, id: int):
+		for nr, person_id in self.numbers.items():
+			if person_id == id:
+				return nr
+		return None
 	
 	def is_running(self):
 		return self.running

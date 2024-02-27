@@ -14,9 +14,9 @@ class Chat:
 	def set_language(self, language: str):
 		self.language = language
 
-	def add_participant(self, id: int, first_name: str):
-		if not id in self.participants:
-			self.participants[id] = Player(first_name)
+	def add_participant(self, id, first_name: str):
+		if not str(id) in self.participants:
+			self.participants[str(id)] = Player(first_name)
 		return self.game.add_participant(id, first_name)
 	
 	def remove_participant(self, id: int):
@@ -29,9 +29,12 @@ class Chat:
 	
 	def start_game(self, starter: int, first_name: str):
 		self.game = Game()
-		self.participants[starter] = Player(first_name)
+		self.add_participant(starter, first_name)
 		self.game.start(starter, first_name)
 		return self.game
+	
+	def add_points(self, id, points: int):
+		self.participants[str(id)].add_points(points)
 
 	def to_dict(self):
 		return {

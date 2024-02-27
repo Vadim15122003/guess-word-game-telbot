@@ -13,10 +13,11 @@ def group(bot, announce=True):
 		return wrapper
 	return decorator
 
-def private_conv(bot, chat:Chat=None, announce=True):
+def private_conv(bot, chats=None, announce=True):
 	def decorator(func):
 		def wrapper(message):
 			chat_type = message.chat.type
+			chat = chats[message.chat.id] if chats and message.chat.id in chats else None
 			if chat_type == 'private':
 				func(message)
 			elif announce and chat:
@@ -29,7 +30,7 @@ def exist(chats):
 		def wrapper(message):
 			if not chats:
 				chats.update(load_data())
-			if message.chat.id not in chats:
+			if message.chat.id not in chats and message.chat.type != 'private':
 				chats[message.chat.id] = Chat()
 				save_data(chats)
 			func(message)
