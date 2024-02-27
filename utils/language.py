@@ -277,6 +277,18 @@ def get_translation(key: str, chat: Chat):
 			return 'Nu ati jucat niciun joc inca in acest chat, deci toti au 0 puncte'
 		else:
 			return 'You have not played any games yet in this chat, so everyone has 0 points'
+		
+	elif key == 'points_reset':
+		if chat.language == 'ro':
+			return 'Punctele la toti participantii din acest chat au fost resetate la 0'
+		else:
+			return 'Points for all participants in this chat have been reset to 0'
+		
+	elif key == 'admin':
+		if chat.language == 'ro':
+			return 'Aceasta comanda poate fi folosita doar de catre admini'
+		else:
+			return 'This command can only be used by admins'
 
 	else:
 		return 'undefined'

@@ -1,17 +1,14 @@
 from telebot import TeleBot, apihelper
 from dotenv import dotenv_values
-from utils.decorators import group, exist, is_in_game, private_conv
+from utils.decorators import group, exist, is_in_game, private_conv, admin
 from utils.chat import Chat
 from telebot import types
 from utils.language import get_translation
 from utils.database import load_data, save_data
 import json, random
 
-# report_player
 # report_word
 # verify_my_word
-# points
-# reset_points (only by admins)
 
 config = dotenv_values('.env')
 bot = TeleBot(config['TELEGRAM_BOT_TOKEN'])
@@ -90,6 +87,19 @@ def settings(message):
 @group(bot)
 def points(message):
 	show_points(chats[message.chat.id], message.chat.id)
+
+@bot.message_handler(commands=['reset_points'])
+@exist(chats)
+@group(bot)
+@admin(chats, bot)
+def reset_points(message):
+	if chats[message.chat.id].participants:
+		for player in chats[message.chat.id].participants.values():
+			player.points = 0
+		save_data(chats)
+		bot.send_message(message.chat.id, get_translation('points_reset', chats[message.chat.id]))
+	else:
+		bot.send_message(message.chat.id, get_translation('no_games', chats[message.chat.id]))
 
 @bot.message_handler(commands=['start_game'])
 @exist(chats)

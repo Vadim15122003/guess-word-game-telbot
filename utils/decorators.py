@@ -9,7 +9,20 @@ def group(bot, announce=True):
 			if chat_type == 'group' or chat_type == 'supergroup':
 				func(message)
 			elif announce:
-				bot.reply_to(message, 'This command can only be used in groups, use /help for details about this bot')
+				bot.reply_to(message, 'Această comandă poate fi utilizată doar în grupuri, utilizați /help pentru detalii despre acest bot')
+		return wrapper
+	return decorator
+
+def admin(chats, bot, announce=True):
+	def decorator(func):
+		def wrapper(message):
+			chat_type = message.chat.type
+			if chat_type == 'group' or chat_type == 'supergroup':
+				chat_member = bot.get_chat_member(message.chat.id, message.from_user.id)
+				if chat_member.status in ['member'] and announce:
+					bot.reply_to(message, get_translation('admin', chats[message.chat.id]))
+				else:
+					func(message)
 		return wrapper
 	return decorator
 
