@@ -33,11 +33,14 @@ def get_user_chat(user_id):
 			return chat_id, chat
 	return None, None
 
+def end_game(chat, chat_id):
+	bot.send_message(chat_id, get_translation('game_ended', chat))
+	show_points(chat, chat_id)
+	chat.game = None
+
 def next_action(game, chat, chat_id):
-	if len(game.participants) < 3:
-		bot.send_message(chat_id, get_translation('game_ended', chat))
-		show_points(chat, chat_id)
-		chat.game = None
+	if len(game.participants) < 3 or len(game.person_to_guess) < 1:
+		end_game(chat, chat_id)
 	else:
 		pers_nr, pers_id = list(game.numbers.items())[0]
 		next_pers_nr, next_pers_id = list(game.numbers.items())[1]
@@ -60,6 +63,10 @@ def show_points(chat, chat_id):
 		bot.send_message(chat_id, msg)
 	else:
 		bot.send_message(chat_id, get_translation('no_games', chat))
+
+def get_simple_word(word: str):
+	return word.lower().replace(' ', '').replace('-', '').replace('_', '').replace('.', '').replace(',',
+				'').replace('ă', 'a').replace('â', 'a').replace('ș', 's').replace('ț', 't').replace('î', 'i')
 
 # public chats
 @bot.message_handler(commands=['help'])
@@ -139,6 +146,8 @@ def play(message):
 				word = random.choice(words)
 				del words
 				chats[message.chat.id].game.play(word)
+				chats[message.chat.id].last_game_word = word
+				chats[message.chat.id].last_game_participants = len(chats[message.chat.id].game.participants)
 				save_data(chats)
 				bot.send_message(message.chat.id, get_translation('game_started', chats[message.chat.id]))
 				list_players: str = ''
@@ -272,7 +281,35 @@ def message_handle(message):
 				game.msg_not_on_theme = 0
 			save_data(chats)
 	else:
-		pass
+		chat_id, chat = get_user_chat(message.from_user.id)
+		user_id = message.from_user.id
+		if chat and str(user_id) in chat.participants and chat.participants[str(user_id)].try_word:
+			player = chat.participants[str(user_id)]
+			if chat.game and chat.game.is_running():
+				org_word = get_simple_word(chat.game.word)
+				guessd_word = get_simple_word(message.text)
+				if org_word == guessd_word:
+					bot.send_message(message.chat.id, 'Felicitari ai ghicit cuvantul corect, pentru aceasta vei primi 3 puncte')
+					bot.send_message(chat_id, '(' + str(chat.game.get_nr_by_id(user_id)) + ') ' + message.from_user.first_name
+					  				+ get_translation('word_guess_try', chat) + '<b>' + message.text + '</b>\n'
+									+ get_translation('word_right', chat), parse_mode='HTML')
+					player.add_points(3)
+					end_game(chat, chat_id)
+				else:
+					bot.send_message(message.chat.id, 'Cuvantul introdus nu este corect cel corect era <b>' + chat.game.word + '</b> ti se va scadea un punct '
+					  + 'pentru aceasta si vei parasi jocul\nDaca crezi ca ai ghicit cuvantul dar ai introdus un sinonim sau alta forma gramaticala poti tasta '
+					  + '/verify_my_word iar ceilanti jucatori vor decide daca cuvantul introdus de tine este corect sau nu (trebui ca mai multi din jumate dintre '
+					  + 'cei care au jucat acest joc sa voteze ca e corect), poti face aceasta doar pana incepe urmatorul joc', parse_mode='HTML')
+					bot.send_message(chat_id, '(' + str(chat.game.get_nr_by_id(user_id)) + ') ' + message.from_user.first_name
+					  				+ get_translation('word_guess_try', chat) + '<b>' + message.text + '</b>\n' + get_translation('word_wrong', chat), parse_mode='HTML')
+					player.add_points(-1)
+					player.word = message.text
+					chat.game.remove_participant(user_id)
+					next_action(chat.game, chat, chat_id)
+			else:
+				bot.send_message(message.chat.id, 'Jocul in care ai incercat sa ghicesti cuvantul, deja sa terminat nu mai poti ghici cuvantul')
+			player.try_word = False
+			save_data(chats)
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_message(call):

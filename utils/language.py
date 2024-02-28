@@ -289,6 +289,24 @@ def get_translation(key: str, chat: Chat):
 			return 'Aceasta comanda poate fi folosita doar de catre admini'
 		else:
 			return 'This command can only be used by admins'
+		
+	elif key == 'word_guess_try':
+		if chat.language == 'ro':
+			return ' a incercat sa ghiceasca cuvantul si a presupus ca acesta este: '
+		else:
+			return ' tried to guess the word and guessed that it is: '
+		
+	elif key == 'word_wrong':
+		if chat.language == 'ro':
+			return 'Nu a avut dreptate de aceia i se va scadea un punct (daca persoana crede ca totusi a ghicit cuvantul poate folosi comanda /verify_my_word in privat si ceilalti jucatori vor vota daca a ghicit sau nu)'
+		else:
+			return 'He was wrong so he will be deducted one point (if the person thinks he guessed the word he can use the /verify_my_word command in private and the other players will vote if he guessed or not)'
+
+	elif key == 'word_right':
+		if chat.language == 'ro':
+			return 'A avut dreptate si a primit 3 puncte'
+		else:
+			return 'He was right and received 3 points'
 
 	else:
 		return 'undefined'
