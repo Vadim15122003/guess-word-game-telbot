@@ -3,9 +3,12 @@ from typing import Dict
 from utils.chat import Chat
 
 def save_data(chats: Dict[int, Chat]):
-	with open('database/chats.json', 'w') as file:
-		chats_dict = {k: v.to_dict() for k, v in chats.items()}
-		json.dump(chats_dict, file, indent=4)
+	try:
+		with open('database/chats.json', 'w') as file:
+			chats_dict = {k: v.to_dict() for k, v in chats.items()}
+			json.dump(chats_dict, file, indent=4)
+	except FileNotFoundError and json.JSONDecodeError and TypeError:
+		pass
 
 def load_data() -> Dict[int, Chat]:
 	try:

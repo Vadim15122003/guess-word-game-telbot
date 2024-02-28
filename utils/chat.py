@@ -7,13 +7,13 @@ class Chat:
 	game: Game
 	participants: Dict[int, Player] = {}
 	last_game_word: str = None
-	last_game_participants = [int]
+	last_game_participants: list = []
 	verify_word: bool = False
 	markup_message_id: str = None
 	edit_message_id: str = None
 	verify_yes: int = 0
 	verify_no: int = 0
-	voted = [int]
+	voted: list = []
 
 	def __init__(self):
 		self.game = None
