@@ -307,6 +307,72 @@ def get_translation(key: str, chat: Chat):
 			return 'A avut dreptate si a primit 3 puncte'
 		else:
 			return 'He was right and received 3 points'
+		
+	elif key == 'verify_word1':
+		if chat.language == 'ro':
+			return ' a cerut sa i se verifice cuvantul pe care el la presupus in ultimul joc, el a scris cuvantul: '
+		else:
+			return ' asked to verify the word he guessed in the last game, he wrote the word: '
+		
+	elif key == 'verify_word2':
+		if chat.language == 'ro':
+			return 'cel corect era: '
+		else:
+			return 'the correct word was: '
+		
+	elif key == 'verify_word3':
+		if chat.language == 'ro':
+			return '\nToti jucatorii care au participat la ultimul joc pot vota daca raspunsul sau a fost corect sau nu (daca nu ati participat votul nu vi se va lua in calcul)'
+		else:
+			return '\nAll players who participated in the last game can vote if his answer was correct or not (if you did not participate the vote will not be taken into account)'
+		
+	elif key == 'verify_word4':
+		if chat.language == 'ro':
+			return 'Este corect si cuvantul scris de '
+		else:
+			return 'It is correct and the word written by '
+		
+	elif key == 'total_votes':
+		if chat.language == 'ro':
+			return 'Total voturi posibile: '
+		else:
+			return 'Total possible votes: '
+		
+	elif key == 'votes_yes':
+		if chat.language == 'ro':
+			return 'Voturi pentru DA: '
+		else:
+			return 'Votes for YES: '
+	
+	elif key == 'votes_no':
+		if chat.language == 'ro':
+			return 'Voturi pentru NU: '
+		else:
+			return 'Votes for NO: '
+		
+	elif key == 'verify_word_not_allowed':
+		if chat.language == 'ro':
+			return 'Nu mai poti vota acum'
+		else:
+			return 'You can not vote now'
+		
+	elif key == 'cant vote':
+		if chat.language == 'ro':
+			return ' nu poti vota pentru ca nu ai participat la ultimul joc'
+		else:
+			return ' you can not vote because you did not participate in the last game'
+		
+	elif key == 'word_verified':
+		if chat.language == 'ro':
+			return 'Cuvantul a fost votat ca fiind corect, persoana care a scris cuvantul a primit 3 puncte (in loc sa i se scada unul)'
+		else:
+			return 'The word was voted as correct, the person who wrote the word received 3 points (instead of being deducted one)'
+		
+	elif key == 'word_not_verified':
+		if chat.language == 'ro':
+			return 'Cuvantul a fost votat ca fiind gresit, persoana care a scris cuvantul nu mai poate vota din nou sa i se verifice'
+		else:
+			return 'The word was voted as wrong, the person who wrote the word can not vote again to be verified'
 
 	else:
 		return 'undefined'

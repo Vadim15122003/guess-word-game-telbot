@@ -7,9 +7,6 @@ from utils.language import get_translation
 from utils.database import load_data, save_data
 import json, random
 
-# report_word
-# verify_my_word
-
 config = dotenv_values('.env')
 bot = TeleBot(config['TELEGRAM_BOT_TOKEN'])
 chats = {}
@@ -147,7 +144,7 @@ def play(message):
 				del words
 				chats[message.chat.id].game.play(word)
 				chats[message.chat.id].last_game_word = word
-				chats[message.chat.id].last_game_participants = len(chats[message.chat.id].game.participants)
+				chats[message.chat.id].last_game_participants = [int(id) for id in chats[message.chat.id].game.participants]
 				save_data(chats)
 				bot.send_message(message.chat.id, get_translation('game_started', chats[message.chat.id]))
 				list_players: str = ''
@@ -236,6 +233,45 @@ def cancel_word_report(message):
 		bot.send_message(message.chat.id, 'Operatie anulata cu succes')
 	else:
 		bot.send_message(message.chat.id, 'Nu ai incercat sa ghicesti cuvantul pentru aceasta tastaza /report_word')
+
+@bot.message_handler(commands=['verify_my_word'])
+@exist(chats)
+@private_conv(bot, chats)
+def verify_my_word(message):
+	chat = None
+	chat_id = None
+	player = None
+	for ch_id, ch in chats.items():
+		if chat:
+			break
+		for pers_id, plyr in ch.participants.items():
+			if pers_id == str(message.from_user.id):
+				chat = ch
+				player = plyr
+				chat_id = ch_id
+				break
+	if chat and not chat.game and chat.participants[str(message.from_user.id)].word and not chat.verify_word:
+		bot.send_message(message.chat.id, 'Jucatorii din jocul precedent pot vota daca cuvantul introdus de tine este corect sau nu')
+		bot.send_message(chat_id, player.first_name + get_translation('verify_word1', chat) + '<b>' + player.word
+				   		+ '</b> ' + get_translation('verify_word2', chat) + '<b>' + chat.last_game_word + '</b> '
+						+ get_translation('verify_word3', chat), parse_mode='HTML')
+		markup_message = bot.send_message(chat_id, get_translation('verify_word4', chat) + player.first_name + '?', reply_markup=types.InlineKeyboardMarkup()
+						.add(types.InlineKeyboardButton('Da', callback_data=f'verify_yes_{message.from_user.id}'))
+						.add(types.InlineKeyboardButton('Nu', callback_data=f'verify_no_{message.from_user.id}')))
+		edit_message = bot.send_message(chat_id, get_translation('total_votes', chat) + str(len(chat.last_game_participants) - 1) + '\n'
+								  		+ get_translation('votes_yes', chat) + '0\n' + get_translation('votes_no', chat) + '0')
+		chat.verify_word = True
+		chat.markup_message_id = markup_message.message_id
+		chat.edit_message_id = edit_message.message_id
+		chat.verify_yes = 0
+		chat.verify_no = 0
+		save_data(chats)
+	elif chat and not chat.game and chat.participants[str(message.from_user.id)].word and chat.verify_word:
+		bot.send_message(message.chat.id, 'Altcineva (sau tu mai inainte) deja a cerut ca sa i se verifice cuvantul asteapta ca verificarea '
+				   		+ 'sa se termine dupa care poti cere si tu')
+	else:
+		bot.send_message(message.chat.id, 'Nu ai un cuvant gresit din jocul trecut care poate fi verificat de ceilanti, '
+				   + 'sau deja a fost verificat, sau deja a inceput alt joc')
 
 @bot.message_handler()
 @exist(chats)
@@ -413,5 +449,48 @@ def callback_message(call):
 	if call.data == 'cancel_player_report':
 		bot.send_message(call.message.chat.id, 'Operatie anulata')
 		bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
+
+	if call.data.startswith('verify_'):
+		chat = chats[call.message.chat.id]
+		yes = call.data.split('_')[1] == 'yes'
+		user_id = call.data.split('_')[2]
+		if chat.verify_word:
+			if (call.from_user.id in chat.last_game_participants and int(user_id) != call.from_user.id
+	   			and call.from_user.id not in chat.voted):
+				if yes:
+					chat.verify_yes += 1
+				else:
+					chat.verify_no += 1
+				try:
+					bot.edit_message_text(get_translation('total_votes', chat) + str(len(chat.last_game_participants) - 1)
+						  				+ '\n'+ get_translation('votes_yes', chat) + str(chat.verify_yes) + '\n'
+								  		+ get_translation('votes_no', chat) + str(chat.verify_no), call.message.chat.id, chat.edit_message_id)
+				except apihelper.ApiTelegramException:
+					bot.delete_message(call.message.chat.id, chat.edit_message_id)
+					new_msg = bot.send_message(call.message.chat.id, get_translation('total_votes', chat) + str(len(chat.last_game_participants) - 1)
+						  				+ '\n'+ get_translation('votes_yes', chat) + str(chat.verify_yes) + '\n'
+								  		+ get_translation('votes_no', chat) + str(chat.verify_no))
+					chat.edit_message_id = new_msg.message_id
+				yes_voted = chat.verify_yes > (len(chat.last_game_participants) - 1) // 2
+				no_voted = chat.verify_no >= (len(chat.last_game_participants) - 1) // 2
+				if yes_voted or no_voted:
+					bot.edit_message_reply_markup(call.message.chat.id, chat.markup_message_id, reply_markup=None)
+					chat.participants[user_id].word = None
+					chat.verify_word = False
+					chat.verify_yes = 0
+					chat.verify_no = 0
+					chat.voted = []
+					chat.edit_message_id = None
+					chat.markup_message_id = None
+					if yes_voted:
+						chat.participants[user_id].points += (1 + 3)
+						bot.send_message(call.message.chat.id, get_translation('word_verified', chat))
+					else:
+						bot.send_message(call.message.chat.id, get_translation('word_not_verified', chat))
+					show_points(chat, call.message.chat.id)
+				chat.voted.append(call.from_user.id)
+				save_data(chats)
+		else:
+			bot.send_message(call.message.chat.id, get_translation('verify_word_not_allowed', chat))
 
 bot.polling(non_stop=True)

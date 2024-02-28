@@ -6,7 +6,7 @@
             "6877896552": {
                 "points": -1,
                 "first_name": "Vadim",
-                "word": "fds",
+                "word": null,
                 "try_word": false
             },
             "7196227855": {
@@ -22,7 +22,17 @@
                 "try_word": false
             }
         },
-        "last_game_word": "G\u00e2t",
-        "last_game_participants": 3
+        "last_game_word": "Ghiveci",
+        "last_game_participants": [
+            6877896552,
+            7196227855,
+            5280577340
+        ],
+        "verify_word": false,
+        "markup_message_id": null,
+        "edit_message_id": null,
+        "verify_yes": 0,
+        "verify_no": 0,
+        "voted": []
     }
 }
