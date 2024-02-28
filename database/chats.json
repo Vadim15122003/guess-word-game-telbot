@@ -17,7 +17,7 @@
                 "1": 6877896552
             },
             "person_to_guess": {
-                "2": 7196227855
+                "1": 6877896552
             },
             "msg_not_on_theme": 0,
             "reminder_cnt": 0,
@@ -26,15 +26,21 @@
         "participants": {
             "6877896552": {
                 "points": 0,
-                "first_name": "Vadim"
+                "first_name": "Vadim",
+                "word": null,
+                "try_word": false
             },
             "7196227855": {
                 "points": 0,
-                "first_name": "PeterPan"
+                "first_name": "PeterPan",
+                "word": null,
+                "try_word": false
             },
             "5280577340": {
                 "points": 0,
-                "first_name": "Alex"
+                "first_name": "Alex",
+                "word": null,
+                "try_word": false
             }
         }
     }

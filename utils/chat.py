@@ -31,6 +31,9 @@ class Chat:
 		self.game = Game()
 		self.add_participant(starter, first_name)
 		self.game.start(starter, first_name)
+		for player in self.participants.values():
+			player.word = None
+			player.try_word = False
 		return self.game
 	
 	def add_points(self, id, points: int):

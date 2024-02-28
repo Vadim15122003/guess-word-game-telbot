@@ -26,7 +26,7 @@ def private(first_name, user_id, chat_id, mesg_str):
 		if e.error_code == 403 and chat_id in chats:
 			bot.send_message(chat_id, f'{first_name} {get_translation("private_msg", chats[chat_id])}')
 		return False
-	
+
 def get_user_chat(user_id):
 	for chat_id, chat in chats.items():
 		if chat.game and chat.game.exits_user(str(user_id)):
@@ -51,7 +51,7 @@ def next_action(game, chat, chat_id):
 		else:
 			bot.send_message(chat_id, '(' + str(pers_nr) + ') ' + pers_name
 							+ get_translation('responder', chat) + '(' + str(last_pers_nr) + ') ' + last_pers_name)
-			
+
 def show_points(chat, chat_id):
 	if chat.participants:
 		msg = get_translation('points_info', chat)
@@ -80,7 +80,6 @@ def settings(message):
 		bot.reply_to(message, get_translation('select_edit', chats[message.chat.id]), reply_markup=markup)
 	else:
 		bot.reply_to(message, get_translation('in_game', chats[message.chat.id]))
-
 
 @bot.message_handler(commands=['points'])
 @exist(chats)
@@ -174,7 +173,7 @@ def play(message):
 @private_conv(bot, chats)
 def report_player(message):
 	_, chat = get_user_chat(message.from_user.id)
-	if chat and chat.game.is_running():
+	if chat and chat.game and chat.game.is_running():
 		is_to_guess = False
 		for pers_id in chat.game.person_to_guess.values():
 			if pers_id == message.from_user.id:
@@ -188,12 +187,46 @@ def report_player(message):
 											callback_data=f'report_{i}'))
 			markup.add(types.InlineKeyboardButton('Anuleaza', callback_data='cancel_player_report'))
 			bot.send_message(message.chat.id, 'Alegeti pe cine presupuneti ca nu stie cuvantul', reply_markup=markup)
-	elif chat and chat.game.is_running():
-		bot.send_message(message.chat.id, 'Tu esti persoana care nu stie cuvantul si trebuie sa ghicesti cuvantul, pentru aceasta tasteaza /report_word')
-	elif chat:
+		else:
+			bot.send_message(message.chat.id, 'Tu esti persoana care nu stie cuvantul si trebuie sa ghicesti cuvantul, pentru aceasta tasteaza /report_word')
+	elif chat and chat.game:
 		bot.send_message(message.chat.id, 'Inca nu a inceput jocul (cel ce a inceput jocul va trebui sa tasteze /play dupa ce toti participantii vor apasa sa participe)')
 	else:
 		bot.send_message(message.chat.id, 'Nu esti in niciun joc activ momentan')
+
+@bot.message_handler(commands=['report_word'])
+@exist(chats)
+@private_conv(bot, chats)
+def report_word(message):
+	_, chat = get_user_chat(message.from_user.id)
+	if chat and chat.game and chat.game.is_running():
+		is_to_guess = False
+		for pers_id in chat.game.person_to_guess.values():
+			if pers_id == message.from_user.id:
+				is_to_guess = True
+				break
+		if is_to_guess:
+			chat.participants[str(message.from_user.id)].try_word = True
+			save_data(chats)
+			bot.send_message(message.chat.id, 'Scrie cuvantul care presupui ca il stiu ceilanti jucatori, sau tasteaza /cancel_word_report pentru a anula operatia')
+		else:
+			bot.send_message(message.chat.id, 'Tu nu esti persoana care nu stie cuvantul si trebuie sa ghicesti jucatorul care nul stie, pentru aceasta tasteaza /report_player')
+	elif chat and chat.game:
+		bot.send_message(message.chat.id, 'Inca nu a inceput jocul (cel ce a inceput jocul va trebui sa tasteze /play dupa ce toti participantii vor apasa sa participe)')
+	else:
+		bot.send_message(message.chat.id, 'Nu esti in niciun joc activ momentan')
+
+@bot.message_handler(commands=['cancel_word_report'])
+@exist(chats)
+@private_conv(bot, chats)
+def cancel_word_report(message):
+	_, chat = get_user_chat(message.from_user.id)
+	if chat and str(message.from_user.id) in chat.participants and chat.participants[str(message.from_user.id)].try_word:
+		chat.participants[str(message.from_user.id)].try_word = False
+		save_data(chats)
+		bot.send_message(message.chat.id, 'Operatie anulata cu succes')
+	else:
+		bot.send_message(message.chat.id, 'Nu ai incercat sa ghicesti cuvantul pentru aceasta tastaza /report_word')
 
 @bot.message_handler()
 @exist(chats)
@@ -254,14 +287,14 @@ def callback_message(call):
 				languages = json.load(file)['languages']
 		except FileNotFoundError:
 			languages = []
-		
+
 		markup = types.InlineKeyboardMarkup()
 		buttons = [types.InlineKeyboardButton(language, callback_data=f'language_{language}') for language in languages]
 		for i in range(0, len(buttons), 3):
 			markup.add(*buttons[i:i+3])		
 		markup.add(types.InlineKeyboardButton(get_translation('cancel', chats[call.message.chat.id]), callback_data='language_cancel'))
 		bot.send_message(call.message.chat.id, get_translation('select_lang', chats[call.message.chat.id]), reply_markup=markup)
-		# to remove button after clickin on it
+		# to remove button after clicking on it
 		# bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
 
 	if call.data.startswith('language') and not chats[call.message.chat.id].in_game():
@@ -296,6 +329,7 @@ def callback_message(call):
 				# bot.send_message(call.message.chat.id, call.from_user.first_name + ' deja participa')
 				pass
 
+	# from private chats
 	if call.data.startswith('report_'):
 		chat_id, chat = get_user_chat(call.from_user.id)
 		if chat and chat.game and chat.game.is_running():
