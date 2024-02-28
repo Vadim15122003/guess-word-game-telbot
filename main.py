@@ -72,7 +72,36 @@ def help(message):
 	if is_group(message):
 		bot.send_message(message.chat.id, get_translation('help', chats[message.chat.id]))
 	else:
-		bot.send_message(message.chat.id, 'This command will show information about commands and bot usage')
+		bot.send_message(message.chat.id, 'Acest bot permite sa jucati jocul intrun grup cu prietenii\nDeci mai intai trebuie sal adaugati in grupul vostru\n'
+				   + '\nCu comanda /start_game puteti incepe jocul, dupa care toti participantii vor trebui sa apese pe butonul "Participa" care va aparea in chat\n'
+				   + 'Dupa ce toti care vor sa participe au apasat cel ce a inceput jocul va trebui sa apese /play si jocul va incepe\n'
+				   + 'Regulile jocului vor fi afisate in chat\nFolositi /settings pentru a modifica limba intrun chat\n/end_game (doar adminii o pot folosi) '
+				   + 'pentru a incheia un joc\n/points pentru a vedea punctele jucatorilor\n/reset_points pentru a reseta punctele jucatorilor\n'
+				   + '/help pentru informatii despre bot\n/report_player pentru a raporta un jucator care nu stie cuvantul\n'
+				   + '/report_word pentru a raporta ca stii cuvantul\n/verify_my_word pentru a cere ca ceilanti sa verifice cuvantul introdus de tine este corect\n')
+
+@bot.message_handler(commands=['rules'])
+@exist(chats)
+def rules(message):
+	if is_group(message):
+		bot.send_message(message.chat.id, get_translation('rules', chats[message.chat.id]))
+	else:
+		bot.send_message(message.chat.id, 'Regulile jocului:\n'
+					+ 'Toti primesc in privat un cuvant. Unele persoane nu a primit cuvantul\n'
+					+ 'acele persoane vor trebui sal ghiceasca\n'
+					+ 'Restu persoanelor vor trebui sa ghiceasca persoanele care nu stiu cuvantul\n'
+					+ '\n'
+					+ '- Pentru a ghici cuvantul scrie in privat /report_word apoi vei putea trimite cuvantul\n'
+					+ '- Dacal ghicesti vei primi 3 puncte daca nu vei pierde 1 punct si jocul pentru tine se va incheia\n'
+					+ '- Daca crezi ca ai ghicit cuvantul dar ai spus un sinonim poti scrie /verify_my_word si ceilanti jucatori vor vota daca ai spus cuvantul corect sau nu\n'
+					+ '\n'
+					+ '- Pentru a ghici persoana care nu stie cuvantul scrie in privat /report_player si dupa vei putea selecta dintro list persoana pe care o presupui\n'
+					+ '- Daca nu ghicesti atat tu cat si acea persoana veti parasi jocul iar cel ce nu a ghicit va pierde 4 puncte\n'
+					+ '- Daca vei ghici tu vei primi 2 puncte, iar daca nu mai sunt persoane care nu stiu cuvantul jocul se va termina\n'
+					+ '\n'
+					+ 'In continuare fiecare pe rand va adresa urmatorului jucator cate o intrebare iar acela va trebui sa raspunda\n'
+					+ 'Jucatorul numarul 1 va adresa intrebarea jucatorului numarului 2, iar numarul 2 va raspunde dupa care numarul 2 va adresa intrebare numarului 3 si tot asa\n'
+					+ 'In acest fel jucatorii care stiu cuvantul va trebui sasi dea seama cine nul stie, iar cei ce nu stiu cuvantul trebuie sasi dea seama care este acel cuvant')
 
 @bot.message_handler(commands=['settings'])
 @exist(chats)
@@ -478,6 +507,7 @@ def callback_message(call):
 						  				+ '\n'+ get_translation('votes_yes', chat) + str(chat.verify_yes) + '\n'
 								  		+ get_translation('votes_no', chat) + str(chat.verify_no), call.message.chat.id, chat.edit_message_id)
 				except apihelper.ApiTelegramException:
+					# After 48 hours you cant edit message, so I delete previous and send new message
 					bot.delete_message(call.message.chat.id, chat.edit_message_id)
 					new_msg = bot.send_message(call.message.chat.id, get_translation('total_votes', chat) + str(len(chat.last_game_participants) - 1)
 						  				+ '\n'+ get_translation('votes_yes', chat) + str(chat.verify_yes) + '\n'
