@@ -123,6 +123,18 @@ def start_game(message):
 	bot.send_message(message.chat.id, message.from_user.first_name + ' ' + get_translation('play', chat))
 	bot.send_message(message.chat.id, get_translation('start_game', chat), reply_markup=markup)
 
+@bot.message_handler(commands=['end_game'])
+@exist(chats)
+@group(bot)
+@admin(chats, bot)
+def end_game(message):
+	if chats[message.chat.id].game:
+		chats[message.chat.id].game = None
+		save_data(chats)
+		bot.send_message(message.chat.id, get_translation('game_ended', chats[message.chat.id]))
+	else:
+		bot.send_message(message.chat.id, get_translation('no_game', chats[message.chat.id]))
+
 @bot.message_handler(commands=['play'])
 @exist(chats)
 @group(bot)

@@ -22,12 +22,8 @@
                 "try_word": false
             }
         },
-        "last_game_word": "Ghiveci",
-        "last_game_participants": [
-            6877896552,
-            7196227855,
-            5280577340
-        ],
+        "last_game_word": null,
+        "last_game_participants": [],
         "verify_word": false,
         "markup_message_id": null,
         "edit_message_id": null,

@@ -373,6 +373,18 @@ def get_translation(key: str, chat: Chat):
 			return 'Cuvantul a fost votat ca fiind gresit, persoana care a scris cuvantul nu mai poate vota din nou sa i se verifice'
 		else:
 			return 'The word was voted as wrong, the person who wrote the word can not vote again to be verified'
+		
+	elif key == 'game_ended':
+		if chat.language == 'ro':
+			return 'Jocul s-a încheiat'
+		else:
+			return 'The game has ended'
+		
+	elif key == 'no_game':
+		if chat.language == 'ro':
+			return 'Nu este niciun joc in desfasurare'
+		else:
+			return 'There is no game in progress'
 
 	else:
 		return 'undefined'
