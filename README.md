@@ -19,3 +19,7 @@
 > Player number 1 will ask player number 2 a question, and number 2 will answer after which number 2 will ask a question to number 3 and so on  
 > In this way the players who know the word will have to figure out who does not know it, and those who do not know the word must figure out what that word is  
 >
+
+### Libraryes that you need:
+> - pip install pyTelegramBotAPI
+> - pip install python-dotenv
