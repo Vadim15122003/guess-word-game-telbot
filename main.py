@@ -530,8 +530,10 @@ try:
 						if yes_voted:
 							chat.participants[user_id].points += (1 + 3)
 							bot.send_message(call.message.chat.id, get_translation('word_verified', chat))
+							bot.send_message(int(user_id), "Cuvantul tia fost votat de ceilanti ca fiind corect deci nu mai pierzi punctul si vei primi 3 puncte")
 						else:
 							bot.send_message(call.message.chat.id, get_translation('word_not_verified', chat))
+							bot.send_message(int(user_id), "Cuvantu tia fost votat de ceilanti ca fiind gresit")
 						show_points(chat, call.message.chat.id)
 					chat.voted.append(call.from_user.id)
 					save_data(chats)
