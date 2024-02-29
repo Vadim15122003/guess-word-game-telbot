@@ -30,14 +30,14 @@ def get_user_chat(user_id):
 			return chat_id, chat
 	return None, None
 
-def end_game(chat, chat_id):
+def finish_game(chat, chat_id):
 	bot.send_message(chat_id, get_translation('game_ended', chat))
 	show_points(chat, chat_id)
 	chat.game = None
 
 def next_action(game, chat, chat_id):
 	if len(game.participants) < 3 or len(game.person_to_guess) < 1:
-		end_game(chat, chat_id)
+		finish_game(chat, chat_id)
 	else:
 		pers_nr, pers_id = list(game.numbers.items())[0]
 		next_pers_nr, next_pers_id = list(game.numbers.items())[1]
@@ -310,6 +310,8 @@ def verify_my_word(message):
 	elif chat and not chat.game and chat.participants[str(message.from_user.id)].word and chat.verify_word:
 		bot.send_message(message.chat.id, 'Altcineva (sau tu mai inainte) deja a cerut ca sa i se verifice cuvantul asteapta ca verificarea '
 				   		+ 'sa se termine dupa care poti cere si tu')
+	elif chat and chat.game:
+		bot.send_message(message.chat.id, 'Asteapta sa se termine jocul pentru a putea sa ceri sa ti se verifice cuvantul')
 	else:
 		bot.send_message(message.chat.id, 'Nu ai un cuvant gresit din jocul trecut care poate fi verificat de ceilanti, '
 				   + 'sau deja a fost verificat, sau deja a inceput alt joc')
