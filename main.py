@@ -7,6 +7,7 @@ from utils.language import get_translation
 from utils.database import load_data, save_data
 import json, random
 
+print('Bot started')
 config = dotenv_values('.env')
 bot = TeleBot(config['TELEGRAM_BOT_TOKEN'])
 chats = {}
@@ -538,5 +539,6 @@ try:
 				bot.send_message(call.message.chat.id, get_translation('verify_word_not_allowed', chat))
 
 	bot.polling(non_stop=True)
-except Exception:
+except Exception as e:
+	print(e)
 	bot.polling(non_stop=True)
