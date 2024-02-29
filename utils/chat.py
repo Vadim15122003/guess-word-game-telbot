@@ -28,8 +28,8 @@ class Chat:
 		return self.game.add_participant(id, first_name)
 	
 	def remove_participant(self, id: int):
-		if id in self.participants:
-			del self.participants[id]
+		if str(id) in self.participants:
+			del self.participants[str(id)]
 		self.game.remove_participant(id)
 
 	def in_game(self):
