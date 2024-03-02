@@ -230,8 +230,9 @@ def report_player(message):
 				break
 		if not is_to_guess:
 			markup = types.InlineKeyboardMarkup()
-			remained_numbers = [nr for nr in chat.game.numbers.keys()]
+			remained_numbers = [int(nr) for nr in chat.game.numbers.keys()]
 			remained_numbers.sort()
+			remained_numbers = [str(nr) for nr in remained_numbers]
 			for i in remained_numbers:
 				if i in chat.game.numbers and chat.game.numbers[i] != message.from_user.id:
 					markup.add(types.InlineKeyboardButton('(' + str(i) + ') ' + chat.game.participants[str(chat.game.numbers[str(i)])],
