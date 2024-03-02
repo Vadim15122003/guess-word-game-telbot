@@ -1,10 +1,52 @@
 {
     "-1002057471506": {
         "language": "en",
-        "game": null,
-        "participants": {},
-        "last_game_word": null,
-        "last_game_participants": [],
+        "game": {
+            "participants": {
+                "6877896552": "Vadim",
+                "5280577340": "Alex"
+            },
+            "running": true,
+            "starter_id": 6877896552,
+            "starter_name": "Vadim",
+            "word": "Market",
+            "numbers": {
+                "3": 5280577340,
+                "1": 6877896552
+            },
+            "person_to_guess": {
+                "3": 5280577340
+            },
+            "msg_not_on_theme": 0,
+            "reminder_cnt": 0,
+            "asking": false
+        },
+        "participants": {
+            "6877896552": {
+                "points": -1,
+                "first_name": "Vadim",
+                "word": null,
+                "try_word": false
+            },
+            "7196227855": {
+                "points": 0,
+                "first_name": "PeterPan",
+                "word": null,
+                "try_word": false
+            },
+            "5280577340": {
+                "points": 0,
+                "first_name": "Alex",
+                "word": null,
+                "try_word": false
+            }
+        },
+        "last_game_word": "Market",
+        "last_game_participants": [
+            6877896552,
+            7196227855,
+            5280577340
+        ],
         "verify_word": false,
         "markup_message_id": null,
         "edit_message_id": null,

@@ -167,51 +167,54 @@ def end_game(message):
 @exist(chats)
 @group(bot)
 def play(message):
-	if not chats[message.chat.id].in_game():
-		bot.reply_to(message, get_translation('not_in_game', chats[message.chat.id]))
-	elif chats[message.chat.id].game.is_running():
-		bot.reply_to(message, get_translation('game_running', chats[message.chat.id]))
-	elif chats[message.chat.id].game.starter_id != message.from_user.id:
-		bot.reply_to(message, chats[message.chat.id].game.starter_name + 
-					get_translation('game_not_started_by_you', chats[message.chat.id]))
-	elif chats[message.chat.id].game.get_participants_number() < 3:
-		bot.reply_to(message, get_translation('not_enough_players', chats[message.chat.id]))
-	else:
-		try:
-			with open('database/words.json', 'r') as file:
-				words = json.load(file)[chats[message.chat.id].language]
-				word = random.choice(words)
-				del words
-				chats[message.chat.id].game.play(word)
-				chats[message.chat.id].last_game_word = word
-				chats[message.chat.id].last_game_participants = [int(id) for id in chats[message.chat.id].game.participants]
-				save_data(chats)
-				bot.send_message(message.chat.id, get_translation('game_started', chats[message.chat.id]))
-				list_players: str = ''
-				for nr, pers_id in chats[message.chat.id].game.numbers.items():
-					list_players += str(nr) + '. ' + chats[message.chat.id].game.participants[str(pers_id)] + '\n'
-				if list_players:
-					bot.send_message(message.chat.id, list_players)
-				bot.send_message(message.chat.id, get_translation('rules1', chats[message.chat.id])
-					+ (str(len(chats[message.chat.id].game.person_to_guess)) + get_translation('rules3', chats[message.chat.id])
-					if len(chats[message.chat.id].game.person_to_guess) > 1 else get_translation('rules2', chats[message.chat.id]))
-					+ get_translation('rules4', chats[message.chat.id]))
-				bot.send_message(message.chat.id, get_translation('rules5', chats[message.chat.id]))
-				for nr, pers_id in chats[message.chat.id].game.numbers.items():
-					if nr in chats[message.chat.id].game.person_to_guess:
-						private(chats[message.chat.id].participants[str(pers_id)].first_name, pers_id, message.chat.id, 
-							get_translation('you_guess', chats[message.chat.id]))
-					else:
-						private(chats[message.chat.id].participants[str(pers_id)].first_name, pers_id, message.chat.id, 
-							get_translation('your_word', chats[message.chat.id]) + '<b>' + chats[message.chat.id].game.word + '</b>')
-				asker_nr, asker_id = list(chats[message.chat.id].game.numbers.items())[0]
-				answer_nr, answer_id = list(chats[message.chat.id].game.numbers.items())[1]
-				asker_name = chats[message.chat.id].game.participants[str(asker_id)]
-				answer_name = chats[message.chat.id].game.participants[str(answer_id)]
-				bot.send_message(message.chat.id, '(' + str(asker_nr) + ') ' + asker_name + get_translation('ask', chats[message.chat.id])
-									+ '(' + str(answer_nr) + ') ' + answer_name + get_translation('respond', chats[message.chat.id]))
-		except FileNotFoundError:
-			bot.send_message(message.chat.id, get_translation('no_words', chats[message.chat.id]))
+	try:
+		if not chats[message.chat.id].in_game():
+			bot.reply_to(message, get_translation('not_in_game', chats[message.chat.id]))
+		elif chats[message.chat.id].game.is_running():
+			bot.reply_to(message, get_translation('game_running', chats[message.chat.id]))
+		elif chats[message.chat.id].game.starter_id != message.from_user.id:
+			bot.reply_to(message, chats[message.chat.id].game.starter_name + 
+						get_translation('game_not_started_by_you', chats[message.chat.id]))
+		elif chats[message.chat.id].game.get_participants_number() < 3:
+			bot.reply_to(message, get_translation('not_enough_players', chats[message.chat.id]))
+		else:
+			try:
+				with open('database/words.json', 'r') as file:
+					words = json.load(file)[chats[message.chat.id].language]
+					word = random.choice(words)
+					del words
+					chats[message.chat.id].game.play(word)
+					chats[message.chat.id].last_game_word = word
+					chats[message.chat.id].last_game_participants = [int(id) for id in chats[message.chat.id].game.participants]
+					save_data(chats)
+					bot.send_message(message.chat.id, get_translation('game_started', chats[message.chat.id]))
+					list_players: str = ''
+					for nr, pers_id in chats[message.chat.id].game.numbers.items():
+						list_players += str(nr) + '. ' + chats[message.chat.id].game.participants[str(pers_id)] + '\n'
+					if list_players:
+						bot.send_message(message.chat.id, list_players)
+					bot.send_message(message.chat.id, get_translation('rules1', chats[message.chat.id])
+						+ (str(len(chats[message.chat.id].game.person_to_guess)) + get_translation('rules3', chats[message.chat.id])
+						if len(chats[message.chat.id].game.person_to_guess) > 1 else get_translation('rules2', chats[message.chat.id]))
+						+ get_translation('rules4', chats[message.chat.id]))
+					bot.send_message(message.chat.id, get_translation('rules5', chats[message.chat.id]))
+					for nr, pers_id in chats[message.chat.id].game.numbers.items():
+						if nr in chats[message.chat.id].game.person_to_guess:
+							private(chats[message.chat.id].participants[str(pers_id)].first_name, pers_id, message.chat.id, 
+								get_translation('you_guess', chats[message.chat.id]))
+						else:
+							private(chats[message.chat.id].participants[str(pers_id)].first_name, pers_id, message.chat.id, 
+								get_translation('your_word', chats[message.chat.id]) + '<b>' + chats[message.chat.id].game.word + '</b>')
+					asker_nr, asker_id = list(chats[message.chat.id].game.numbers.items())[0]
+					answer_nr, answer_id = list(chats[message.chat.id].game.numbers.items())[1]
+					asker_name = chats[message.chat.id].game.participants[str(asker_id)]
+					answer_name = chats[message.chat.id].game.participants[str(answer_id)]
+					bot.send_message(message.chat.id, '(' + str(asker_nr) + ') ' + asker_name + get_translation('ask', chats[message.chat.id])
+										+ '(' + str(answer_nr) + ') ' + answer_name + get_translation('respond', chats[message.chat.id]))
+			except FileNotFoundError:
+				bot.send_message(message.chat.id, get_translation('no_words', chats[message.chat.id]))
+	except Exception as e:
+		chats[message.chat.id].game.running = False
 
 # private chats
 @bot.message_handler(commands=['report_player'])
@@ -227,8 +230,10 @@ def report_player(message):
 				break
 		if not is_to_guess:
 			markup = types.InlineKeyboardMarkup()
-			for i in range(1, len(chat.game.numbers) + 1):
-				if chat.game.numbers[str(i)] != message.from_user.id:
+			remained_numbers = [nr for nr in chat.game.numbers.keys()]
+			remained_numbers.sort()
+			for i in remained_numbers:
+				if i in chat.game.numbers and chat.game.numbers[i] != message.from_user.id:
 					markup.add(types.InlineKeyboardButton('(' + str(i) + ') ' + chat.game.participants[str(chat.game.numbers[str(i)])],
 											callback_data=f'report_{i}'))
 			markup.add(types.InlineKeyboardButton('Anuleaza', callback_data='cancel_player_report'))
@@ -318,7 +323,7 @@ def verify_my_word(message):
 @bot.message_handler()
 @exist(chats)
 def message_handle(message):
-	if is_group(message):
+	if is_group(message) and not message.text.startswith('.'):
 		chat = chats[message.chat.id]
 		if chat.in_game() and chat.game.is_running():
 			game = chat.game
@@ -450,11 +455,11 @@ def callback_message(call):
 		if chat and chat.game and chat.game.is_running():
 			game = chat.game
 			reported_nr = call.data.split('_')[1]
-			reported_id = game.numbers[str(reported_nr)]
-			reported_name = game.participants[str(reported_id)]
+			reported_id = game.numbers[str(reported_nr)] if reported_nr in game.numbers else None
+			reported_name = game.participants[str(reported_id)] if reported_id else None
 			reporter_name = call.from_user.first_name
 			reporter_nr = game.get_nr_by_id(call.from_user.id)
-			if reported_nr in game.numbers and str(reported_id) in game.participants:
+			if reported_nr in game.numbers and reported_id and str(reported_id) in game.participants:
 				first_nr, _ = list(game.numbers.items())[0]
 				last_nr, _ = list(game.numbers.items())[len(game.numbers) - 1]
 				if last_nr == reported_nr or first_nr == reported_nr:
@@ -483,7 +488,7 @@ def callback_message(call):
 					next_action(game, chat, chat_id)
 				save_data(chats)
 			else:
-				bot.send_message(call.message.chat.id, f'({reported_nr}) {reported_name} nu mai este in acest joc')
+				bot.send_message(call.message.chat.id, f'Numarul ({reported_nr}) nu mai este in acest joc')
 		else:
 			bot.send_message(call.message.chat.id, 'Nu esti in niciun joc activ momentan')
 		bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
