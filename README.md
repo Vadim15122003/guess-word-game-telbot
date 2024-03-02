@@ -24,4 +24,5 @@
 > - pip install pyTelegramBotAPI
 > - pip install python-dotenv
 
-> **./infinite_runner.sh** will run program and if they end with an error they will restart them and save error in error.log file
+> **./infinite_runner.sh** will run program and if they end with an error they will restart them and save error in error.log file (use chmod +x
+> to have permission to run this script in bash)
