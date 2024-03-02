@@ -23,3 +23,5 @@
 ### Libraryes that you need:
 > - pip install pyTelegramBotAPI
 > - pip install python-dotenv
+
+> **./infinite_runner.sh** will run program and if they end with an error they will restart them and save error in error.log file

@@ -1,0 +1,15 @@
+{
+    "-1002057471506": {
+        "language": "en",
+        "game": null,
+        "participants": {},
+        "last_game_word": null,
+        "last_game_participants": [],
+        "verify_word": false,
+        "markup_message_id": null,
+        "edit_message_id": null,
+        "verify_yes": 0,
+        "verify_no": 0,
+        "voted": []
+    }
+}
